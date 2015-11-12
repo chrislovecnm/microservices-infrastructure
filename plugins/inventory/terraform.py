@@ -25,6 +25,7 @@ import json
 import os
 import re
 
+
 VERSION = '0.3.0pre'
 
 
@@ -429,9 +430,10 @@ def vsphere_host(resource, module_name):
     name = raw_attrs['name']
     groups = []
 
+    # figure out private and public ips ...
     attrs = {
         'id': raw_attrs['id'],
-        'ip_address': raw_attrs['ip_address'],
+        'ip_address': raw_attrs['network_interface.0.ip_address'],
         'metadata': parse_dict(raw_attrs, 'custom_configuration_parameters'),
         'ansible_ssh_port': 22,
         'provider': 'vsphere',
@@ -439,7 +441,7 @@ def vsphere_host(resource, module_name):
 
     try:
         attrs.update({
-            'ansible_ssh_host': raw_attrs['ip_address'],
+            'ansible_ssh_host': raw_attrs['network_interface.0.ip_address'],
         })
     except (KeyError, ValueError):
         attrs.update({'ansible_ssh_host': '', })
@@ -448,6 +450,8 @@ def vsphere_host(resource, module_name):
         'consul_dc': _clean_dc(attrs['metadata'].get('consul_dc', module_name)),
         'role': attrs['metadata'].get('role', 'none'),
         'ansible_ssh_user': attrs['metadata'].get('ssh_user', 'centos'),
+        'public_ipv4': raw_attrs['network_interface.0.ip_address'],
+        'private_ipv4': raw_attrs['network_interface.0.ip_address'],
     })
 
     groups.append('role=' + attrs['role'])
