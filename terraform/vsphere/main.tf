@@ -79,3 +79,11 @@ resource "vsphere_virtual_machine" "mi-worker-nodes" {
     "consul_dc" = "${var.consul_dc}"
   }
 }
+
+output "control_ips" {
+  value = "${join(\",\", vsphere_virtual_machine.mi-control-nodes.*.network_interface.ip_address)}"
+}
+
+output "worker_ips" {
+  value = "${join(\",\", vsphere_virtual_machine.mi-worker-nodes.*.network_interface.ip_address)}"
+}
